@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Carrito de Compras</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    input {
+        padding: 10px;
+        margin: 5px;
+        width: 45%;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        padding: 10px 15px;
+        margin: 5px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .btn-add { background: #4CAF50; color: white; }
+    .btn-clear { background: #f44336; color: white; }
+    .btn-total { background: #2196F3; color: white; }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        background: #f9f9f9;
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .delete-btn {
+        background: red;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .total {
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🛒 Carrito de Compras</h1>
+
+    <div>
+        <input type="text" id="name" placeholder="Nombre del producto">
+        <input type="number" id="price" placeholder="Precio">
+        <button class="btn-add" onclick="addProduct()">Agregar</button>
+    </div>
+
+    <h3>Productos</h3>
+    <ul id="list"></ul>
+
+    <div class="total">
+        Total: $<span id="total">0</span>
+    </div>
+
+    <div style="text-align:center;">
+        <button class="btn-total" onclick="getTotal()">Calcular Total</button>
+        <button class="btn-clear" onclick="clearCart()">Vaciar</button>
+    </div>
+</div>
+
+<script>
+const API = "http://localhost:8080/cart";
+
+function addProduct() {
+    const name = document.getElementById("name").value;
+    const price = document.getElementById("price").value;
+
+    if (!name || price <= 0) {
+        alert("Datos inválidos");
+        return;
+    }
+
+    fetch(`${API}?name=${name}&price=${price}`, {
+        method: "POST"
+    }).then(() => {
+        loadProducts();
+        clearInputs();
+    });
+}
+
+function loadProducts() {
+    fetch(API)
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+
+            data.forEach(p => {
+                const li = document.createElement("li");
+
+                li.innerHTML = `
+                    ${p.name} - $${p.price}
+                    <button class="delete-btn" onclick="deleteProduct(${p.id})">X</button>
+                `;
+
+                list.appendChild(li);
+            });
+        });
+}
+
+function getTotal() {
+    fetch(API + "/total")
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("total").innerText = data;
+        });
+}
+
+function deleteProduct(id) {
+    fetch(API + "/" + id, { method: "DELETE" })
+        .then(() => loadProducts());
+}
+
+function clearCart() {
+    fetch(API + "/clear", { method: "DELETE" })
+        .then(() => {
+            loadProducts();
+            document.getElementById("total").innerText = "0";
+        });
+}
+
+function clearInputs() {
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+}
+
+loadProducts();
+</script>
+
+</body>
+</html>

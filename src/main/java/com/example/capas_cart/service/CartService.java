@@ -9,63 +9,50 @@ import java.util.List;
 @Service
 public class CartService {
 
-    private final CartRepository repository;
+    private final CartRepository repo;
 
-    public CartService(CartRepository repository) {
-        this.repository = repository;
+    public CartService(CartRepository repo) {
+        this.repo = repo;
     }
 
-    public String addProduct(String name, double price) {
-        if (name == null || name.isBlank()) {
-            return "Nombre inválido";
-        }
-
-        if (price <= 0) {
-            return "Precio inválido";
-        }
-
-        repository.save(name, price);
+    public String add(String name, double price) {
+        if (name.isBlank() || price <= 0) return "Datos inválidos";
+        repo.save(name, price);
         return "Producto agregado";
     }
 
-    public List<Product> getProducts() {
-        return repository.findAll();
+    public List<Product> list() {
+        return repo.findAll();
     }
 
-    public double calculateTotal() {
-        double total = 0;
+    public String update(Long id, String name, double price) {
+        if (repo.findById(id).isEmpty()) return "No existe";
+        repo.update(id, name, price);
+        return "Actualizado";
+    }
 
-        for (Product p : repository.findAll()) {
-            total += p.getPrice();
-        }
+    public String delete(Long id) {
+        repo.delete(id);
+        return "Eliminado";
+    }
 
-        // regla de negocio
-        if (total > 50) {
-            total *= 0.9;
-        }
+    public void clear() {
+        repo.clear();
+    }
 
+    public double total() {
+        double total = repo.findAll().stream()
+                .mapToDouble(Product::getPrice)
+                .sum();
+
+        if (total > 50) total *= 0.9;
         return total;
     }
 
-    public String deleteProduct(Long id) {
-        if (repository.findById(id).isEmpty()) {
-            return "Producto no encontrado";
-        }
-
-        repository.deleteById(id);
-        return "Producto eliminado";
-    }
-
-    public String clearCart() {
-        repository.clear();
-        return "Carrito vaciado";
-    }
-
-    public List<Product> searchByName(String name) {
-        return repository.findByName(name);
-    }
-
-    public int countProducts() {
-        return repository.findAll().size();
+    // 💳 Checkout
+    public String checkout() {
+        double total = total();
+        repo.clear();
+        return "Pago realizado. Total: $" + total;
     }
 }

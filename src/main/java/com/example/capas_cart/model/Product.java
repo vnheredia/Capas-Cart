@@ -1,7 +1,6 @@
 package com.example.capas_cart.model;
 
 public class Product {
-
     private Long id;
     private String name;
     private double price;

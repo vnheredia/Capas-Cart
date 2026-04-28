@@ -1,6 +1,5 @@
 package com.example.capas_cart.controller;
 
-
 import com.example.capas_cart.model.Product;
 import com.example.capas_cart.service.CartService;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cart")
+@CrossOrigin
 public class CartController {
 
     private final CartService service;
@@ -17,47 +17,40 @@ public class CartController {
         this.service = service;
     }
 
-    // ✅ Agregar
     @PostMapping
-    public String addProduct(
-            @RequestParam String name,
-            @RequestParam double price) {
-        return service.addProduct(name, price);
+    public String add(@RequestParam String name, @RequestParam double price) {
+        return service.add(name, price);
     }
 
-    // ✅ Listar
     @GetMapping
-    public List<Product> getProducts() {
-        return service.getProducts();
+    public List<Product> list() {
+        return service.list();
     }
 
-    // ✅ Total
-    @GetMapping("/total")
-    public double getTotal() {
-        return service.calculateTotal();
+    @PutMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
+                         @RequestParam double price) {
+        return service.update(id, name, price);
     }
 
-    // ✅ Eliminar
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
-        return service.deleteProduct(id);
+        return service.delete(id);
     }
 
-    // ✅ Vaciar
     @DeleteMapping("/clear")
-    public String clear() {
-        return service.clearCart();
+    public void clear() {
+        service.clear();
     }
 
-    // ✅ Buscar
-    @GetMapping("/search")
-    public List<Product> search(@RequestParam String name) {
-        return service.searchByName(name);
+    @GetMapping("/total")
+    public double total() {
+        return service.total();
     }
 
-    // ✅ Contar
-    @GetMapping("/count")
-    public int count() {
-        return service.countProducts();
+    @PostMapping("/checkout")
+    public String checkout() {
+        return service.checkout();
     }
 }
